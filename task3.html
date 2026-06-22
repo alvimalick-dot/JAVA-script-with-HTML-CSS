@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo App</title>
+</head>
+
+<body id="body" style="margin: 0; padding: 0; background-color: hsl(235, 21%, 11%); ">
+
+  <div id="banner" style="background-image: url('bg-desktop-dark.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; height: 300px; width: 100%; position: absolute; top: 0; left: 0; z-index: -1; transition: background-image 0.3s ease;"></div>
+
+  <div style="width: 500px; margin: 60px auto 0 auto; text-align: center;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; color: white;  margin-bottom: 40px;">
+      <h1 style="margin: 0;">T O D O</h1>
+      <button type="button" id="themeToggle" style="background-color: transparent; border: none; cursor: pointer; ">
+        <img id="image" src="icon-moon.svg" >
+      </button>
+    </div>
+
+    <div id="bg" style = "background-color: hsl(237, 14%, 26%);">
+    <input id="todoInput" type="text" placeholder="Create a new todo..." style="width: 100%; padding: 16px; border-radius: 5px; border: none; font-size: 16px; box-sizing: border-box; outline: none; background-color: hsl(237, 14%, 26%); color: white;" />
+    
+    <ul id="todoList" style="list-style: none; margin: 0; padding: 0; border-radius: 5px 5px 0 0; overflow: hidden; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); width: 100%; background-color: hsl(237, 14%, 26%);"></ul>
+
+    <div id="filterBar" style=" border-radius: 0 0 5px 5px; padding: 16px; display: flex; justify-content: center; gap: 16px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); background-color: hsl(237, 14%, 26%);">
+     <span id = "items-left" style="background: none;text-align: left; margin-left: 40px; border: none;  font-size: 10px; color: hsl(236, 9%, 61%);"  ></span>
+      <button onclick="filterTodos('all')" id="btn-all" style="background: none; border: none; cursor: pointer; font-size: 14px; font-weight: bold; color: hsl(220, 98%, 61%);">All</button>
+      <button onclick="filterTodos('active')" id="btn-active" style="background: none; border: none; cursor: pointer; font-size: 14px; color: hsl(236, 9%, 61%);">Active</button>
+      <button onclick="filterTodos('complete')" id="btn-complete" style="background: none; border: none; cursor: pointer; font-size: 14px; color: hsl(236, 9%, 61%);">Completed</button>
+      <button onclick="clearComp()" style="background: none;text-align: left; margin-left: 40px; border: none; cursor: pointer; font-size: 10px; color: hsl(236, 9%, 61%);" >   clear complete </button>
+
+    </div>
+</div>
+  </div>
+
+  <script>
+   
+    document.getElementById("themeToggle").addEventListener("click", function() {
+      const body = document.getElementById("body");
+      const banner = document.getElementById("banner");
+      const imge = document.getElementById("image");
+
+      const bg = document.getElementById("bg");
+      const todoInput = document.getElementById("todoInput");
+      const todoList = document.getElementById("todoList");
+      const filterBar = document.getElementById("filterBar");
+      if (imge.src.includes("icon-moon.svg")) {
+        imge.src = "icon-sun.svg";
+        banner.style.backgroundImage = "url('bg-desktop-light.jpg')";
+        body.style.backgroundColor = "hsl(236, 33%, 92%)";
+        bg.style.backgroundColor = "white";
+        todoInput.style.backgroundColor = "white";
+        todoInput.style.color = "black";
+        todoList.style.backgroundColor = "white";
+        filterBar.style.backgroundColor = "white";
+        document.querySelectorAll(".todo-item").forEach(item => {
+          item.style.backgroundColor = "white";
+          const span = item.querySelector("span");
+          if (span && !span.style.textDecoration.includes("line-through")) {
+            span.style.color = "black";
+          }
+        });
+      } else {
+        imge.src = "icon-moon.svg";
+        banner.style.backgroundImage = "url('bg-desktop-dark.jpg')";
+        body.style.backgroundColor = "hsl(235, 21%, 11%)";
+        bg.style.backgroundColor = "hsl(237, 14%, 26%)";
+        todoInput.style.backgroundColor = "hsl(237, 14%, 26%)";
+        todoInput.style.color = "white";
+        todoList.style.backgroundColor = "hsl(237, 14%, 26%)";
+        filterBar.style.backgroundColor = "hsl(237, 14%, 26%)";
+        document.querySelectorAll(".todo-item").forEach(item => {
+          item.style.backgroundColor = "hsl(237, 14%, 26%)";
+          const span = item.querySelector("span");
+          if (span && !span.style.textDecoration.includes("line-through")) {
+            span.style.color = "white";
+          }
+        });
+      }
+    });
+
+    const input = document.getElementById("todoInput");
+    const list = document.getElementById("todoList");
+
+document.getElementById("todoInput").addEventListener("keydown", function(e) {
+      if (e.key === "Enter" && this.value.trim() !== "") {
+        const li = document.createElement("li");
+        li.className = "todo-item";
+        
+     
+        const isLightMode = document.getElementById("image").src.includes("icon-sun.svg");
+        const itemBg = isLightMode ? "white" : "hsl(237, 14%, 26%)";
+        const itemTextColor = isLightMode ? "black" : "white";
+        
+        
+        li.draggable = true;
+        li.style.cssText = `padding: 16px; border-bottom: 1px solid hsl(234, 11%, 52%); display: flex; justify-content: space-between; align-items: center; font-size: 16px; width: 100%; box-sizing: border-box; background-color: ${itemBg}; color: ${itemTextColor}; cursor: move;`;
+        
+        const leftContainer = document.createElement("div");
+        leftContainer.style.cssText = "display: flex; align-items: center; gap: 12px;";
+
+        const checkBtn = document.createElement("button");
+        checkBtn.type = "button";
+        checkBtn.style.cssText = "width: 20px; height: 20px; border-radius: 50%; border: 1px solid ; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;";
+
+        const checkIm = document.createElement("img");
+        checkIm.src = "icon-check.svg";
+        checkIm.style.cssText = "width: 10px; height: 10px; display: none;"; 
+
+        checkBtn.appendChild(checkIm);
+
+        const textSpan = document.createElement("span");
+        textSpan.textContent = this.value.trim();
+        
+        checkBtn.addEventListener("click", function() {
+          if (checkIm.style.display === "none") {
+            checkIm.style.display = "block";
+            checkBtn.style.background = "linear-gradient(135deg, hsl(170, 100%, 67%), hsl(309, 87%, 65%))"; 
+            checkBtn.style.border = "none";
+            textSpan.style.textDecoration = "line-through";
+            textSpan.style.color = "hsl(234, 11%, 52%)";
+          } else {
+            checkIm.style.display = "none";
+            checkBtn.style.background = "transparent";
+            checkBtn.style.border = "1px solid ";
+            textSpan.style.textDecoration = "none";
+            
+            const isDarkNow = document.getElementById("image").src.includes("icon-moon.svg");
+            textSpan.style.color = isDarkNow ? "white" : "black";
+          }
+          filterTodos(currentFilter);
+          displayitems();
+        });
+
+        leftContainer.appendChild(checkBtn);
+        leftContainer.appendChild(textSpan);
+        li.appendChild(leftContainer);
+
+        const crossBtn = document.createElement("button");
+        crossBtn.type = "button";
+        crossBtn.style.cssText = "background: transparent; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; margin-left: auto;";
+
+        const crossImg = document.createElement("img");
+        crossImg.src = "icon-cross.svg";
+        crossImg.style.cssText = "width: 12px; height: 12px;";
+
+        crossBtn.addEventListener("click", function() {
+          li.remove();
+          displayitems();
+        });
+
+        crossBtn.appendChild(crossImg);
+        li.appendChild(crossBtn);
+
+        li.addEventListener("dragstart", function(e) {
+          e.dataTransfer.effectAllowed = "move";
+          this.style.opacity = "0.4";
+          window.draggedItem = this;
+        });
+
+        li.addEventListener("dragend", function() {
+          this.style.opacity = "1";
+        });
+
+        li.addEventListener("dragover", function(e) {
+          e.preventDefault();
+          if (window.draggedItem !== this) {
+            const rect = this.getBoundingClientRect();
+            const midpoint = rect.top + rect.height / 2;
+            if (e.clientY < midpoint) {
+              this.parentNode.insertBefore(window.draggedItem, this);
+            } else {
+              this.parentNode.insertBefore(window.draggedItem, this.nextSibling);
+            }
+          }
+        });
+
+        document.getElementById("todoList").appendChild(li);
+        this.value = "";
+        filterTodos(currentFilter);
+        displayitems();
+      }
+    });
+let count =0;
+  
+function clearComp() {
+ 
+  const todoList = document.getElementById("todoList");
+  
+ 
+  const items = todoList.querySelectorAll("li");
+
+  
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+
+  
+    const isComplete = item.querySelector("img[src='icon-check.svg']").style.display !== "none";
+
+    
+    if (isComplete) {
+      item.remove(); 
+    }
+  }
+}
+
+
+function displayitems() {
+  count = 0;
+  const items = document.getElementById("todoList").querySelectorAll("li");
+  for (let i = 0; i < items.length; i++) {
+    const isComplete = items[i].querySelector("img[src='icon-check.svg']").style.display !== "none";
+    if (!isComplete) count++;
+  }
+  document.getElementById("items-left").textContent = `${count} items left`;
+}
+
+    let currentFilter = 'all';
+
+    function filterTodos(filter) {
+      currentFilter = filter;
+      
+      const items = document.getElementById("todoList").querySelectorAll("li");
+      
+     
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        
+        
+        const checkImg = item.querySelector("img[src='icon-cross.svg']"); 
+        const isComplete = item.querySelector("img[src='icon-check.svg']").style.display !== "none";
+        
+        if (filter === 'all') {
+          item.style.display = '';
+        } else if (filter === 'active') {
+          if (isComplete === true) {
+            item.style.display = 'none';
+          } else {
+            item.style.display = '';
+          }
+        } else if (filter === 'complete') {
+          if (isComplete === true) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        }
+      }
+      
+      
+      const allBtn = document.getElementById('btn-all');
+      const activeBtn = document.getElementById('btn-active');
+      const completeBtn = document.getElementById('btn-complete');
+      
+    
+      allBtn.style.color = 'hsl(236, 9%, 61%)';
+      activeBtn.style.color = 'hsl(236, 9%, 61%)';
+      completeBtn.style.color = 'hsl(236, 9%, 61%)';
+      
+    
+      if (filter === 'all') {
+        allBtn.style.color = 'hsl(220, 98%, 61%)';
+      } else if (filter === 'active') {
+        activeBtn.style.color = 'hsl(220, 98%, 61%)';
+      } else if (filter === 'complete') {
+        completeBtn.style.color = 'hsl(220, 98%, 61%)';
+      }
+    }
+  </script>
+     
+</body>
+</html>
